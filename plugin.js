@@ -1,28 +1,35 @@
 (function () {
     'use strict';
 
-    function my_site_init() {
+    // 1. Создаем функцию добавления
+    var pluginInit = function () {
         var item = {
-            title: 'https://www.chaturbate.best/couple-cams/',
+            title: 'МОЙ САЙТ',
             icon: '<svg height="36" viewBox="0 0 24 24" width="36" xmlns="http://www.w3.org/2000/svg"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" fill="white"/></svg>',
             onSelect: function () {
-                Lampa.Platform.openURL('https://google.com');
+                Lampa.Platform.openURL('https://www.chaturbate.best/couple-cams/');
             }
         };
 
-        // Самый простой способ добавления в конец списка
-        Lampa.Menu.add(item);
-    }
+        // Добавляем в меню, если еще не добавлено
+        if (Lampa.Menu && Lampa.Menu.add) {
+            Lampa.Menu.add(item);
+        }
+    };
 
-    // Регистрируем плагин без лишних оберток
+    // 2. Пытаемся запуститься всеми возможными способами
     try {
-        // Подписываемся на событие готовности
-        Lampa.Listener.follow('app', function (e) {
-            if (e.type == 'ready') {
-                my_site_init();
-            }
+        // Способ для новых версий
+        Lampa.Plugins.add('my_site', {
+            init: pluginInit
         });
-    } catch (e) {
-        console.error("Plugin load error");
-    }
+        
+        // Запасной способ (если приложение уже готово)
+        if (window.appready) pluginInit();
+        
+        // Слушатель для подстраховки
+        Lampa.Listener.follow('app', function (e) {
+            if (e.type == 'ready') pluginInit();
+        });
+    } catch (e) {}
 })();
