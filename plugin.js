@@ -1,38 +1,48 @@
 (function () {
     'use strict';
 
-    // 1. ЖЕСТКИЙ СТОПОР (Уникальный ключ для текущей сессии ТВ)
     if (window.my_plugin_active) return;
     window.my_plugin_active = true;
 
     var btnId = 'plugin_site_button';
 
     function createButton() {
-        // 2. ОЧИСТКА (Сначала удаляем всё старое, если оно просочилось из кэша)
-        var old = document.getElementById(btnId);
-        if (old) old.remove();
+        if (document.getElementById(btnId)) return;
 
         var menu = document.querySelector('.menu__list');
         if (!menu) return;
 
-        // 3. СОЗДАНИЕ (Чистый HTML без посредников Лампы)
-        var html = '<div class="menu__item selector" id="' + btnId + '">' +
+        // Добавляем классы focusable и selector — без них пульт не увидит кнопку
+        var html = '<div class="menu__item selector focusable" id="' + btnId + '">' +
             '<div class="menu__ico"><svg height="36" viewBox="0 0 24 24" width="36" xmlns="http://www.w3.org/2000/svg"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" fill="white"/></svg></div>' +
-            '<div class="menu__text">https://www.chaturbate.best/couple-cams/</div>' +
+            '<div class="menu__text">ССЫЛКА НА САЙТ</div>' +
         '</div>';
 
         menu.insertAdjacentHTML('beforeend', html);
 
-        // 4. ДЕЙСТВИЕ
-        document.getElementById(btnId).onclick = function() {
+        // Обработка нажатия через систему Lampa
+        var btn = document.getElementById(btnId);
+        btn.addEventListener('click', function() {
             Lampa.Platform.openURL('https://google.com');
-        };
+        });
+
+        // Заставляем навигацию Лампы «увидеть» новый элемент
+        if (window.Lampa && Lampa.Controller) {
+            Lampa.Controller.add({
+                name: 'my_site_btn',
+                selector: '#' + btnId,
+                onEnter: function() {
+                    Lampa.Platform.openURL('https://www.chaturbate.best/couple-cams/');
+                }
+            });
+        }
     }
 
-    // 5. КОНТРОЛЬ (Tizen часто перерисовывает меню, проверяем наличие кнопки каждые 3 сек)
-    setInterval(function() {
-        if (!document.getElementById(btnId)) {
+    // Проверка наличия меню
+    var timer = setInterval(function() {
+        if (document.querySelector('.menu__list')) {
             createButton();
+            // Не очищаем интервал, так как Лампа может перерисовать меню
         }
-    }, 3000);
+    }, 2000);
 })();
