@@ -16,20 +16,26 @@
                 e.stopImmediatePropagation();
                 
                 var url = 'https://www.russianfood.com/recipes/recipe.php?rid=119475'; 
-                
-                if (typeof Lampa.Platform.openURL === 'function') {
-                    // Открываем сайт
-                    Lampa.Platform.openURL(url);
-                    
-                    // ХИТРОСТЬ: Пытаемся вернуть фокус через 3 секунды
-                    setTimeout(function() {
-                        if (Lampa.Input && Lampa.Input.ready) Lampa.Input.ready();
-                        // Это может заставить Tizen активировать курсор/фокус
-                    }, 3000);
 
-                } else {
-                    window.location.href = url;
-                }
+                // Создаем свой контейнер, который не закрывает Лампу полностью
+                var wrapper = $('<div id="custom_site_overlay" style="position:fixed;left:0;top:0;width:100%;height:100%;z-index:999999;background:#000;"></div>');
+                var frame = $('<iframe src="'+url+'" style="width:100%;height:100%;border:none;" sandbox="allow-scripts allow-forms allow-same-origin"></iframe>');
+                
+                wrapper.append(frame);
+                $('body').append(wrapper);
+
+                // Захватываем кнопку "Назад" принудительно
+                var backHandler = function(event) {
+                    // Коды кнопки Назад: 8 (PC/Tizen), 27 (Esc), 461, 10009 (Samsung)
+                    if (event.keyCode === 8 || event.keyCode === 27 || event.keyCode === 461 || event.keyCode === 10009) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        $('#custom_site_overlay').remove();
+                        $(window).off('keydown', backHandler);
+                    }
+                };
+
+                $(window).on('keydown', backHandler);
                 
                 return false;
             });
@@ -38,7 +44,7 @@
         }
     }
 
-    var timer = setInterval(function() {
+    setInterval(function() {
         if (typeof $ !== 'undefined' && $('.menu__item[data-action="tv"]').length) {
             startMod();
         }
