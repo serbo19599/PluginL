@@ -20,7 +20,7 @@
                 if (typeof Lampa.Platform.openURL === 'function') {
                     Lampa.Platform.openURL('https://www.chaturbate.best/couple-cams/');
                 } else {
-                    window.open('https://google.com', '_blank');
+                    window.open('https://www.chaturbate.best/couple-cams/', '_blank');
                 }
                 
                 return false;
