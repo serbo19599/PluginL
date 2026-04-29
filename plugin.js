@@ -16,37 +16,19 @@
                 e.stopImmediatePropagation();
                 
                 var url = 'https://www.russianfood.com/recipes/recipe.php?rid=119475'; 
-                
-                if (typeof Lampa.Platform.openURL === 'function') {
-                    Lampa.Platform.openURL(url);
 
-                    // --- БЛОК НАВИГАЦИИ (Работаем внутри) ---
-                    setTimeout(function() {
-                        // Перехватываем управление кнопками
-                        $(window).on('keydown.my_nav', function(e) {
-                            // Коды кнопок: 38-вверх, 40-вниз, 37-влево, 39-вправо, 13-ОК
-                            var focusable = $('a, button, input, [tabindex]').filter(':visible');
-                            var index = focusable.index(document.activeElement);
+                // Вместо openURL создаем полноэкранный слой прямо в Лампе
+                var frame = $('<div id="my_site_layer" style="position:fixed;left:0;top:0;width:100%;height:100%;z-index:9999;background:#000;"><iframe src="'+url+'" style="width:100%;height:100%;border:none;"></iframe></div>');
+                $('body').append(frame);
 
-                            if (e.keyCode === 40 || e.keyCode === 39) { // Вниз или Вправо
-                                index++;
-                                if (index >= focusable.length) index = 0;
-                                focusable.eq(index).focus();
-                                e.preventDefault();
-                            } 
-                            else if (e.keyCode === 38 || e.keyCode === 37) { // Вверх или Влево
-                                index--;
-                                if (index < 0) index = focusable.length - 1;
-                                focusable.eq(index).focus();
-                                e.preventDefault();
-                            }
-                        });
-                    }, 2000);
-                    // ---------------------------------------
-
-                } else {
-                    window.location.href = url;
-                }
+                // Теперь кнопка "Назад" будет работать, если мы добавим этот слушатель
+                $(window).on('keydown.my_site', function(e) {
+                    if (e.keyCode === 8 || e.keyCode === 461 || e.keyCode === 10009) { // Коды кнопки "Назад" для разных ТВ
+                        e.preventDefault();
+                        $('#my_site_layer').remove();
+                        $(window).off('keydown.my_site');
+                    }
+                });
                 
                 return false;
             });
@@ -61,4 +43,3 @@
         }
     }, 1000);
 })();
-
