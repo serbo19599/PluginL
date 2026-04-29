@@ -16,19 +16,20 @@
                 e.stopImmediatePropagation();
                 
                 var url = 'https://www.russianfood.com/recipes/recipe.php?rid=119475'; 
+                
+                if (typeof Lampa.Platform.openURL === 'function') {
+                    // Открываем сайт
+                    Lampa.Platform.openURL(url);
+                    
+                    // ХИТРОСТЬ: Пытаемся вернуть фокус через 3 секунды
+                    setTimeout(function() {
+                        if (Lampa.Input && Lampa.Input.ready) Lampa.Input.ready();
+                        // Это может заставить Tizen активировать курсор/фокус
+                    }, 3000);
 
-                // Вместо openURL создаем полноэкранный слой прямо в Лампе
-                var frame = $('<div id="my_site_layer" style="position:fixed;left:0;top:0;width:100%;height:100%;z-index:9999;background:#000;"><iframe src="'+url+'" style="width:100%;height:100%;border:none;"></iframe></div>');
-                $('body').append(frame);
-
-                // Теперь кнопка "Назад" будет работать, если мы добавим этот слушатель
-                $(window).on('keydown.my_site', function(e) {
-                    if (e.keyCode === 8 || e.keyCode === 461 || e.keyCode === 10009) { // Коды кнопки "Назад" для разных ТВ
-                        e.preventDefault();
-                        $('#my_site_layer').remove();
-                        $(window).off('keydown.my_site');
-                    }
-                });
+                } else {
+                    window.location.href = url;
+                }
                 
                 return false;
             });
