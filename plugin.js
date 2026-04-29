@@ -4,50 +4,48 @@
     if (window.my_mod_active) return;
     window.my_mod_active = true;
 
-    // Создаем пустой компонент-заглушку, чтобы Лампа не паниковала
-    Lampa.Component.add('my_site_component', function (object) {
-        this.create = function () {
-            // Как только компонент создается, открываем сайт
-            Lampa.Platform.openURL(object.url);
-            // Возвращаемся назад в меню, чтобы не висеть в пустом компоненте
-            setTimeout(function() {
-                Lampa.Activity.backward();
-            }, 500);
-        };
-        this.render = function () { return $('<div></div>'); };
-        this.pause = function () {};
-        this.active = function () {};
-        this.destroy = function () {};
-    });
-
     function startMod() {
         var target = $('.menu__item[data-action="tv"]');
         
         if (target.length > 0 && !target.data('modded')) {
+            // 1. Меняем внешний вид
             target.find('.menu__text').text('МОЙ САЙТ');
             target.css('color', '#ffeb3b');
 
-            target.off('click').on('click', function (e) {
+            // 2. Убиваем все стандартные обработчики Лампы на этой кнопке
+            target.unbind().off(); 
+
+            // 3. Вешаем наш обработчик с высшим приоритетом
+            target.on('click hover:enter', function (e) {
                 e.preventDefault();
                 e.stopImmediatePropagation();
+                e.stopPropagation();
 
-                // Запускаем наш компонент
-                Lampa.Activity.push({
-                    url: 'https://www.russianfood.com/recipes/recipe.php?rid=119475/', // ВАШ АДРЕС
-                    title: 'МОЙ САЙТ',
-                    component: 'my_site_component'
-                });
+                var url = 'https://www.russianfood.com/recipes/recipe.php?rid=119475/'; // ВАШ АДРЕС
+
+                // Используем системный вызов Tizen напрямую
+                try {
+                    if (window.tizen) {
+                        // Если это чистый Tizen
+                        Lampa.Platform.openURL(url);
+                    } else {
+                        // Если это WebOS или Android версия
+                        Lampa.Platform.openURL(url);
+                    }
+                } catch (err) {
+                    window.location.href = url;
+                }
 
                 return false;
             });
 
+            // 4. Метка, чтобы Лампа не перерисовала её обратно
             target.data('modded', true);
+            target.attr('data-plugin-custom', 'true');
         }
     }
 
-    var timer = setInterval(function() {
-        if (typeof $ !== 'undefined' && $('.menu__item[data-action="tv"]').length) {
-            startMod();
-        }
-    }, 1000);
+    // Запускаем агрессивный цикл проверки (каждые полсекунды)
+    // Если Лампа попытается вернуть кнопку "Сериалы", мы тут же перехватим её снова
+    setInterval(startMod, 500);
 })();
