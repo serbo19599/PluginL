@@ -11,25 +11,21 @@
             target.find('.menu__text').text('МОЙ САЙТ');
             target.css('color', '#ffeb3b');
 
-            // Используем самый простой способ клика, который у вас РАБОТАЛ
+            // Используем прямой обработчик, который давал прокрутку
             target.on('click', function (e) {
                 e.preventDefault();
                 e.stopImmediatePropagation();
+                e.stopPropagation();
 
                 var url = 'https://www.russianfood.com/recipes/recipe.php?rid=119475'; // ВАШ АДРЕС
 
+                // Метод, который открывал окно и давал скролл
                 if (window.Lampa && Lampa.Platform) {
-                    // 1. Открываем сайт
                     Lampa.Platform.openURL(url);
-                    
-                    // 2. ФОКУС: Через 3 секунды пробуем "включить" пульт
-                    // Мы посылаем системе сигнал, что нужно активировать курсор
-                    setTimeout(function() {
-                        if (window.Lampa.Controller) {
-                            Lampa.Controller.toggle('content'); 
-                        }
-                    }, 3000);
+                } else {
+                    window.location.href = url;
                 }
+                
                 return false;
             });
 
@@ -37,7 +33,6 @@
         }
     }
 
-    setInterval(function() {
-        if (typeof $ !== 'undefined') startMod();
-    }, 1000);
+    // Проверка раз в 1.5 секунды (оптимально для Tizen)
+    setInterval(startMod, 1500);
 })();
