@@ -4,86 +4,64 @@
     if (window.my_mod_active) return;
     window.my_mod_active = true;
 
-    // --- ФУНКЦИЯ КУРСОРА (Добавляем к рабочему коду) ---
-    function createVirtualCursor() {
-        if (document.getElementById('lampa-cursor')) return;
-        
-        var cursor = document.createElement('div');
-        cursor.id = 'lampa-cursor';
-        // Рисуем заметную точку
-        cursor.setAttribute('style', 'position:fixed;width:15px;height:15px;background:#ffeb3b;border-radius:50%;border:2px solid #000;z-index:999999;pointer-events:none;display:none;top:50%;left:50%;box-shadow:0 0 10px rgba(0,0,0,0.5);');
-        document.body.appendChild(cursor);
+    // 1. Регистрируем сайт как "Родной раздел" Лампы
+    Lampa.Component.add('my_site_native', function (object) {
+        var comp = this;
+        var html = $('<div class="video-full"></div>');
+        var frame = $('<iframe src="' + object.url + '" style="width: 100%; height: 100%; border: none;"></iframe>');
 
-        var posX = window.innerWidth / 2;
-        var posY = window.innerHeight / 2;
+        this.create = function () {
+            html.append(frame);
+            
+            // Ждем загрузки и заставляем Лампу "увидеть" содержимое
+            frame.on('load', function() {
+                Lampa.Controller.enable('my_site_native');
+            });
+        };
 
-        window.addEventListener('keydown', function (e) {
-            // Показываем курсор только если нажаты стрелки
-            if ([37, 38, 39, 40].indexOf(e.keyCode) >= 0) {
-                cursor.style.display = 'block';
-                var step = 40; // Скорость движения точки
+        this.active = function () {
+            // Передаем управление пультом этому компоненту
+            Lampa.Controller.add('my_site_native', {
+                toggle: function () {},
+                up: function () { frame[0].contentWindow.postMessage('up', '*'); },
+                down: function () { frame[0].contentWindow.postMessage('down', '*'); },
+                left: function () { frame[0].contentWindow.postMessage('left', '*'); },
+                right: function () { frame[0].contentWindow.postMessage('right', '*'); },
+                back: function () { Lampa.Activity.backward(); }
+            });
+            Lampa.Controller.toggle('my_site_native');
+        };
 
-                if (e.keyCode === 37) posX -= step; // Влево
-                if (e.keyCode === 38) posY -= step; // Вверх
-                if (e.keyCode === 39) posX += step; // Вправо
-                if (e.keyCode === 40) posY += step; // Вниз
-
-                cursor.style.left = posX + 'px';
-                cursor.style.top = posY + 'px';
-                
-                // Чтобы не листало страницу одновременно с движением точки
-                e.preventDefault();
-            }
-
-            // Если нажали ОК (13) - имитируем клик в точке
-            if (e.keyCode === 13 && cursor.style.display === 'block') {
-                var el = document.elementFromPoint(posX, posY);
-                if (el) {
-                    el.click();
-                    // Если это ссылка или кнопка, на которую нужно нажать принудительно:
-                    var dispatchMouseEvent = function(target, var_args) {
-                        var e = document.createEvent("MouseEvents");
-                        e.initEvent.apply(e, Array.prototype.slice.call(arguments, 1));
-                        target.dispatchEvent(e);
-                    };
-                    dispatchMouseEvent(el, 'mousedown', true, true);
-                    dispatchMouseEvent(el, 'mouseup', true, true);
-                }
-            }
-        });
-    }
+        this.render = function () { return html; };
+        this.pause = function () {};
+        this.stop = function () {};
+        this.destroy = function () { html.remove(); };
+    });
 
     function startMod() {
         var target = $('.menu__item[data-action="tv"]');
-        
         if (target.length > 0 && !target.data('modded')) {
             target.find('.menu__text').text('МОЙ САЙТ');
             target.css('color', '#ffeb3b');
 
-            target.on('hover:enter click', function (e) {
+            target.on('click', function (e) {
                 e.preventDefault();
                 e.stopImmediatePropagation();
-                
-                var url = 'https://www.russianfood.com/recipes/recipe.php?rid=119475'; // ВАШ АДРЕС
-                
-                if (typeof Lampa.Platform.openURL === 'function') {
-                    Lampa.Platform.openURL(url);
-                    // Активируем курсор при открытии
-                    createVirtualCursor();
-                } else {
-                    window.location.href = url;
-                }
-                
+
+                // 2. Запускаем сайт внутри "родного" контейнера
+                Lampa.Activity.push({
+                    url: 'https://www.russianfood.com/recipes/recipe.php?rid=119475', // ВАШ САЙТ
+                    title: 'МОЙ САЙТ',
+                    component: 'my_site_native',
+                    page: 1
+                });
                 return false;
             });
-
             target.data('modded', true);
         }
     }
 
     setInterval(function() {
-        if (typeof $ !== 'undefined' && $('.menu__item[data-action="tv"]').length) {
-            startMod();
-        }
+        if (typeof $ !== 'undefined') startMod();
     }, 1000);
 })();
