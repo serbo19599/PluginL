@@ -17,25 +17,25 @@
                 
                 var url = 'https://www.russianfood.com/recipes/recipe.php?rid=119475'; 
                 
-                if (typeof Lampa.Platform.openURL === 'function') {
-                    // 1. Открываем сайт (ваша рабочая база)
+                // Используем встроенный метод Lampa для открытия внешних ссылок
+                // через внутренний интерфейс, который понимает кнопку "Назад"
+                if (window.Lampa && Lampa.Platform) {
                     Lampa.Platform.openURL(url);
-
-                    // 2. СИСТЕМНЫЙ ХАК ДЛЯ НАВИГАЦИИ
-                    // Через 2 секунды пробуем "разбудить" браузер
-                    setTimeout(function() {
-                        try {
-                            // Вызываем системную навигацию Tizen
-                            if (window.tizen) {
-                                tizen.tvinput.registerKey("FocusIn");
-                            }
-                        } catch(e) {}
-                    }, 2000);
-
                 } else {
                     window.location.href = url;
                 }
                 
+                // ХАК: Возвращаем контроль кнопке "Назад" через 2 секунды
+                setTimeout(function() {
+                    window.onkeydown = function(event) {
+                        if (event.keyCode === 8 || event.keyCode === 461 || event.keyCode === 10009) {
+                            // Если нажали назад - принудительно перезагружаем Лампу
+                            // Это единственный 100% способ выйти из зависшего сайта
+                            window.location.reload();
+                        }
+                    };
+                }, 2000);
+
                 return false;
             });
 
@@ -43,10 +43,9 @@
         }
     }
 
-    var timer = setInterval(function() {
+    setInterval(function() {
         if (typeof $ !== 'undefined' && $('.menu__item[data-action="tv"]').length) {
             startMod();
         }
     }, 1000);
 })();
-
