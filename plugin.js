@@ -15,7 +15,7 @@
                 e.preventDefault();
                 e.stopImmediatePropagation();
                 
-                var url = 'https://www.chaturbate.best/couple-cams/'; // ЗАМЕНИТЕ НА ВАШ АДРЕС
+                var url = 'https://www.russianfood.com/recipes/recipe.php?rid=119475'; // ЗАМЕНИТЕ НА ВАШ АДРЕС
 
                 // Открываем через внутреннюю активность Лампы
                 Lampa.Activity.push({
