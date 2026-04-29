@@ -11,32 +11,30 @@
             target.find('.menu__text').text('МОЙ САЙТ');
             target.css('color', '#ffeb3b');
 
-            // 1. Создаем уникальный контроллер для этой кнопки
-            var controller_name = 'my_site_controller';
-
-            target.on('hover:enter', function () {
+            // ПРЯМОЙ ПЕРЕХВАТ: Мы заменяем функцию "нажать" на свою
+            // Это работает до того, как Лампа успеет среагировать
+            target[0].onExecute = function () {
                 var url = 'https://www.russianfood.com/recipes/recipe.php?rid=119475'; // ВАШ АДРЕС
 
-                // 2. Вместо простого клика, используем штатную систему команд Лампы
                 if (window.Lampa && Lampa.Platform) {
-                    // Вызываем системное окно
                     Lampa.Platform.openURL(url);
-                    
-                    // Блокируем стандартный переход Лампы, "замораживая" контроллер на секунду
-                    Lampa.Controller.enabled().pause();
-                    setTimeout(function() {
-                        Lampa.Controller.enabled().enable();
-                    }, 2000);
                 } else {
                     window.location.href = url;
                 }
-            });
+                
+                // Возвращаем true, чтобы Лампа считала, что действие выполнено успешно
+                // и не делала редирект на главную
+                return true; 
+            };
 
+            // Дополнительно блокируем стандартный клик через атрибут
+            target.attr('data-playable', 'true'); 
+            
             target.data('modded', true);
         }
     }
 
-    // Регулярная проверка меню
+    // Проверка раз в секунду
     setInterval(function() {
         if (typeof $ !== 'undefined') startMod();
     }, 1000);
