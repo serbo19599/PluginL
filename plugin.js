@@ -1,32 +1,39 @@
 (function () {
     'use strict';
 
-    // 1. ПОЛНАЯ БЛОКИРОВКА ДУБЛИКАТОВ
     if (window.my_mod_active) return;
     window.my_mod_active = true;
 
     function modifyMenu() {
-        // 2. ИЩЕМ ЖИВУЮ КНОПКУ (например, "Сериалы" или "Мультфильмы")
-        // Можно заменить [data-action="tv"] на "anime" или "mult"
+        // Захватываем кнопку "Сериалы" (tv)
         var target = $('.menu__item[data-action="tv"]');
         
         if (target.length > 0 && !target.data('modded')) {
-            // 3. ПЕРЕКРАШИВАЕМ И ПЕРЕИМЕНОВЫВАЕМ
-            target.find('.menu__text').text('МОЙ сайт');
-            target.css('color', '#ffeb3b'); // Выделим цветом, чтобы вы её узнали
+            target.find('.menu__text').text('МОЙ САЙТ');
+            target.css('color', '#ffeb3b');
             
-            // 4. ПОДМЕНЯЕМ ДЕЙСТВИЕ (Удаляем старые события, ставим свое)
+            // Отключаем штатные переходы Лампы (важно, чтобы не кидало на главную)
             target.off('click').on('click', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
-                Lampa.Platform.openURL('https://www.chaturbate.best/couple-cams/');
+                
+                // Пробуем вызвать платформу напрямую через системную оболочку
+                try {
+                    Lampa.Platform.openURL('https://www.chaturbate.best/couple-cams/');
+                } catch(err) {
+                    // Если не сработало, пробуем через Activity (внутреннее окно)
+                    Lampa.Activity.push({
+                        url: 'https://google.com',
+                        title: 'МОЙ САЙТ',
+                        component: 'web_view',
+                        page: 1
+                    });
+                }
             });
 
-            // Метка, чтобы не модифицировать повторно
             target.data('modded', true);
         }
     }
 
-    // Запускаем проверку меню
     setInterval(modifyMenu, 2000);
 })();
