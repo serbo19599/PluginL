@@ -1,39 +1,53 @@
 (function () {
     'use strict';
 
+    // Проверка на дубликаты
     if (window.my_mod_active) return;
     window.my_mod_active = true;
 
     function startMod() {
-        var target = $('.menu__item[data-action="tv"]');
+        // Ищем кнопку через нативный JS (безопаснее, чем $)
+        var items = document.querySelectorAll('.menu__item');
+        var target = null;
+
+        for (var i = 0; i < items.length; i++) {
+            if (items[i].getAttribute('data-action') === 'tv') {
+                target = items[i];
+                break;
+            }
+        }
         
-        if (target.length > 0 && !target.data('modded')) {
-            // 1. Меняем только текст и цвет, не трогаем события Лампы
-            target.find('.menu__text').text('МОЙ САЙТ');
-            target.css('color', '#ffeb3b');
+        if (target && !target.getAttribute('data-modded')) {
+            // Меняем текст
+            var textEl = target.querySelector('.menu__text');
+            if (textEl) textEl.innerText = 'МОЙ САЙТ';
+            target.style.color = '#ffeb3b';
 
-            // 2. Добавляем невидимую "накладку" прямо внутрь кнопки
-            // Она перехватит физическое нажатие до того, как Лампа его обработает
-            target.prepend('<div id="click-overlay" style="position:absolute;width:100%;height:100%;z-index:10;top:0;left:0;"></div>');
-
-            $('#click-overlay').on('click', function (e) {
+            // Перехватываем клик напрямую
+            target.onclick = function (e) {
                 e.preventDefault();
                 e.stopImmediatePropagation();
                 
-                var url = 'https://www.russianfood.com/recipes/recipe.php?rid=119475'; // ВАШ АДРЕС
+                var url = 'https://www.russianfood.com/recipes/recipe.php?rid=119475'; // ВАШ АДРЕС (обязательно с https://)
 
-                if (window.Lampa && Lampa.Platform) {
-                    Lampa.Platform.openURL(url);
-                } else {
-                    window.location.href = url;
+                try {
+                    // Используем самый стабильный метод Лампы
+                    if (window.Lampa && window.Lampa.Platform) {
+                        window.Lampa.Platform.openURL(url);
+                    } else {
+                        window.location.href = url;
+                    }
+                } catch (err) {
+                    console.log('Open error:', err);
                 }
-                return false;
-            });
 
-            target.data('modded', true);
+                return false;
+            };
+
+            target.setAttribute('data-modded', 'true');
         }
     }
 
-    // Проверка раз в секунду
-    setInterval(startMod, 1000);
+    // Запускаем проверку каждые 2 секунды (не слишком часто, чтобы не грузить ТВ)
+    setInterval(startMod, 2000);
 })();
