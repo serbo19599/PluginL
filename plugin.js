@@ -1,53 +1,43 @@
 (function () {
     'use strict';
 
-    // Проверка на дубликаты
     if (window.my_mod_active) return;
     window.my_mod_active = true;
 
     function startMod() {
-        // Ищем кнопку через нативный JS (безопаснее, чем $)
-        var items = document.querySelectorAll('.menu__item');
-        var target = null;
-
-        for (var i = 0; i < items.length; i++) {
-            if (items[i].getAttribute('data-action') === 'tv') {
-                target = items[i];
-                break;
-            }
-        }
+        var target = $('.menu__item[data-action="tv"]');
         
-        if (target && !target.getAttribute('data-modded')) {
-            // Меняем текст
-            var textEl = target.querySelector('.menu__text');
-            if (textEl) textEl.innerText = 'МОЙ САЙТ';
-            target.style.color = '#ffeb3b';
+        if (target.length > 0 && !target.data('modded')) {
+            target.find('.menu__text').text('МОЙ САЙТ');
+            target.css('color', '#ffeb3b');
 
-            // Перехватываем клик напрямую
-            target.onclick = function (e) {
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                
-                var url = 'https://www.russianfood.com/recipes/recipe.php?rid=119475'; // ВАШ АДРЕС (обязательно с https://)
+            // 1. Создаем уникальный контроллер для этой кнопки
+            var controller_name = 'my_site_controller';
 
-                try {
-                    // Используем самый стабильный метод Лампы
-                    if (window.Lampa && window.Lampa.Platform) {
-                        window.Lampa.Platform.openURL(url);
-                    } else {
-                        window.location.href = url;
-                    }
-                } catch (err) {
-                    console.log('Open error:', err);
+            target.on('hover:enter', function () {
+                var url = 'https://www.russianfood.com/recipes/recipe.php?rid=119475'; // ВАШ АДРЕС
+
+                // 2. Вместо простого клика, используем штатную систему команд Лампы
+                if (window.Lampa && Lampa.Platform) {
+                    // Вызываем системное окно
+                    Lampa.Platform.openURL(url);
+                    
+                    // Блокируем стандартный переход Лампы, "замораживая" контроллер на секунду
+                    Lampa.Controller.enabled().pause();
+                    setTimeout(function() {
+                        Lampa.Controller.enabled().enable();
+                    }, 2000);
+                } else {
+                    window.location.href = url;
                 }
+            });
 
-                return false;
-            };
-
-            target.setAttribute('data-modded', 'true');
+            target.data('modded', true);
         }
     }
 
-    // Запускаем проверку каждые 2 секунды (не слишком часто, чтобы не грузить ТВ)
-    setInterval(startMod, 2000);
+    // Регулярная проверка меню
+    setInterval(function() {
+        if (typeof $ !== 'undefined') startMod();
+    }, 1000);
 })();
