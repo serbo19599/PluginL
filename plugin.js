@@ -4,51 +4,46 @@
     if (window.my_mod_active) return;
     window.my_mod_active = true;
 
-    // 1. Создаем "пустышку", которую Лампа не боится
-    Lampa.Component.add('my_site_fix', function (object) {
-        var comp = this;
-        var html = $('<div class="video-full" style="background:#000;"></div>');
-        // Вставляем ваш сайт прямо в этот компонент
-        var frame = $('<iframe src="' + object.url + '" style="width:100%; height:100%; border:none;" sandbox="allow-scripts allow-forms allow-same-origin"></iframe>');
-
-        this.create = function () {
-            html.append(frame);
-        };
-
-        this.active = function () {
-            // Вешаем управление кнопкой "Назад" через контроллер Лампы
-            Lampa.Controller.add('my_site_fix', {
-                toggle: function () {},
-                back: function () {
-                    Lampa.Activity.backward(); // Это вернет в меню
-                }
-            });
-            Lampa.Controller.toggle('my_site_fix');
-        };
-
-        this.render = function () { return html; };
-        this.destroy = function () { html.remove(); };
-    });
-
     function startMod() {
         var target = $('.menu__item[data-action="tv"]');
+        
         if (target.length > 0 && !target.data('modded')) {
             target.find('.menu__text').text('МОЙ САЙТ');
             target.css('color', '#ffeb3b');
 
             target.on('hover:enter click', function (e) {
                 e.preventDefault();
+                e.stopImmediatePropagation();
                 
-                // 2. Вызываем наш новый компонент
-                Lampa.Activity.push({
-                    url: 'https://www.russianfood.com/recipes/recipe.php?rid=119475',
-                    title: 'Рецепты',
-                    component: 'my_site_fix',
-                    page: 1
-                });
+                var url = 'https://www.russianfood.com/recipes/recipe.php?rid=119475'; 
+
+                // Создаем контейнер, который разрешает скролл
+                var layer = $('<div id="lampa_web_layer" style="position:fixed;left:0;top:0;width:100%;height:100%;z-index:999999;background:#000;overflow-y:auto;-webkit-overflow-scrolling:touch;"></div>');
+                
+                // Используем тег <object> вместо <iframe> - он иногда обходит защиту фреймов на Tizen
+                var content = $('<object data="'+url+'" type="text/html" style="width:100%;height:200%;border:none;"></object>');
+                
+                layer.append(content);
+                $('body').append(layer);
+
+                // ФИКС КНОПКИ НАЗАД И СКРОЛЛА
+                var handleKey = function(event) {
+                    // Назад
+                    if (event.keyCode === 8 || event.keyCode === 461 || event.keyCode === 10009) {
+                        event.preventDefault();
+                        $('#lampa_web_layer').remove();
+                        $(window).off('keydown', handleKey);
+                    }
+                    // Скролл вверх/вниз для простого пульта
+                    if (event.keyCode === 40) layer.scrollTop(layer.scrollTop() + 100);
+                    if (event.keyCode === 38) layer.scrollTop(layer.scrollTop() - 100);
+                };
+
+                $(window).on('keydown', handleKey);
                 
                 return false;
             });
+
             target.data('modded', true);
         }
     }
