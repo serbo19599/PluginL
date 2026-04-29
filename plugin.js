@@ -4,34 +4,6 @@
     if (window.my_mod_active) return;
     window.my_mod_active = true;
 
-    // 1. Создаем официальный компонент, который Лампа примет за "свой"
-    Lampa.Component.add('my_web_gate', function (object) {
-        var comp = this;
-        
-        this.create = function () {
-            // Как только компонент создан, вызываем окно браузера
-            if (window.Lampa && Lampa.Platform) {
-                Lampa.Platform.openURL(object.url);
-            } else {
-                window.location.href = object.url;
-            }
-
-            // Через секунду тихо возвращаем Лампу в меню под сайтом
-            // чтобы при выходе из браузера пользователь не видел пустой экран
-            setTimeout(function() {
-                Lampa.Activity.backward();
-            }, 1000);
-        };
-
-        this.render = function () {
-            return $('<div></div>'); // Пустой контейнер
-        };
-        
-        this.pause = function () {};
-        this.active = function () {};
-        this.destroy = function () {};
-    });
-
     function startMod() {
         var target = $('.menu__item[data-action="tv"]');
         
@@ -39,17 +11,25 @@
             target.find('.menu__text').text('МОЙ САЙТ');
             target.css('color', '#ffeb3b');
 
-            target.unbind().off().on('click', function (e) {
+            // Используем самый простой способ клика, который у вас РАБОТАЛ
+            target.on('click', function (e) {
                 e.preventDefault();
                 e.stopImmediatePropagation();
 
-                // 2. Вызываем наш "Троянский" компонент через штатный Activity
-                Lampa.Activity.push({
-                    url: 'https://www.russianfood.com/recipes/recipe.php?rid=119475', // ВАШ АДРЕС
-                    title: 'МОЙ САЙТ',
-                    component: 'my_web_gate'
-                });
+                var url = 'https://www.russianfood.com/recipes/recipe.php?rid=119475'; // ВАШ АДРЕС
 
+                if (window.Lampa && Lampa.Platform) {
+                    // 1. Открываем сайт
+                    Lampa.Platform.openURL(url);
+                    
+                    // 2. ФОКУС: Через 3 секунды пробуем "включить" пульт
+                    // Мы посылаем системе сигнал, что нужно активировать курсор
+                    setTimeout(function() {
+                        if (window.Lampa.Controller) {
+                            Lampa.Controller.toggle('content'); 
+                        }
+                    }, 3000);
+                }
                 return false;
             });
 
