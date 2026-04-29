@@ -6,25 +6,39 @@
 
     function startMod() {
         var target = $('.menu__item[data-action="tv"]');
+        
         if (target.length > 0 && !target.data('modded')) {
-            target.find('.menu__text').text('ТЕСТ КНОПОК');
-            target.css('color', '#4caf50'); // Зеленый цвет для теста
+            target.find('.menu__text').text('МОЙ САЙТ');
+            target.css('color', '#ffeb3b');
 
             target.on('hover:enter click', function (e) {
                 e.preventDefault();
                 e.stopImmediatePropagation();
                 
-                // Тестируем на YouTube или Google - там навигация ТВ должна подхватиться сама
-                var url = 'https://www.youtube.com/tv'; 
+                var url = 'https://www.russianfood.com/recipes/recipe.php?rid=119475'; 
+
+                // ПРОВЕРКА MSX API
+                if (typeof TVX === 'undefined') {
+                    // Если MSX API не загружен, пробуем открыть через стандарт
+                    Lampa.Platform.openURL(url);
+                } else {
+                    // КОМАНДА ДЛЯ MSX: Открыть как контент
+                    // Это заставляет MSX держать пульт под контролем
+                    TVX.Navigation.navigateTo(url, {
+                        type: 'html',
+                        title: 'Рецепты'
+                    });
+                }
                 
-                Lampa.Platform.openURL(url);
                 return false;
             });
+
             target.data('modded', true);
         }
     }
 
-    setInterval(function() {
+    // В MSX иногда нужно подождать загрузки библиотеки TVX
+    var timer = setInterval(function() {
         if (typeof $ !== 'undefined' && $('.menu__item[data-action="tv"]').length) {
             startMod();
         }
