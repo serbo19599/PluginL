@@ -12,14 +12,14 @@
         
         if (target.length > 0 && !target.data('modded')) {
             // 3. ПЕРЕКРАШИВАЕМ И ПЕРЕИМЕНОВЫВАЕМ
-            target.find('.menu__text').text('https://www.chaturbate.best/couple-cams/');
+            target.find('.menu__text').text('МОЙ сайт');
             target.css('color', '#ffeb3b'); // Выделим цветом, чтобы вы её узнали
             
             // 4. ПОДМЕНЯЕМ ДЕЙСТВИЕ (Удаляем старые события, ставим свое)
             target.off('click').on('click', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
-                Lampa.Platform.openURL('https://google.com');
+                Lampa.Platform.openURL('https://www.chaturbate.best/couple-cams/');
             });
 
             // Метка, чтобы не модифицировать повторно
