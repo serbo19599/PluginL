@@ -4,6 +4,34 @@
     if (window.my_mod_active) return;
     window.my_mod_active = true;
 
+    // 1. Создаем официальный компонент, который Лампа примет за "свой"
+    Lampa.Component.add('my_web_gate', function (object) {
+        var comp = this;
+        
+        this.create = function () {
+            // Как только компонент создан, вызываем окно браузера
+            if (window.Lampa && Lampa.Platform) {
+                Lampa.Platform.openURL(object.url);
+            } else {
+                window.location.href = object.url;
+            }
+
+            // Через секунду тихо возвращаем Лампу в меню под сайтом
+            // чтобы при выходе из браузера пользователь не видел пустой экран
+            setTimeout(function() {
+                Lampa.Activity.backward();
+            }, 1000);
+        };
+
+        this.render = function () {
+            return $('<div></div>'); // Пустой контейнер
+        };
+        
+        this.pause = function () {};
+        this.active = function () {};
+        this.destroy = function () {};
+    });
+
     function startMod() {
         var target = $('.menu__item[data-action="tv"]');
         
@@ -11,30 +39,24 @@
             target.find('.menu__text').text('МОЙ САЙТ');
             target.css('color', '#ffeb3b');
 
-            // ПРЯМОЙ ПЕРЕХВАТ: Мы заменяем функцию "нажать" на свою
-            // Это работает до того, как Лампа успеет среагировать
-            target[0].onExecute = function () {
-                var url = 'https://www.russianfood.com/recipes/recipe.php?rid=119475'; // ВАШ АДРЕС
+            target.unbind().off().on('click', function (e) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
 
-                if (window.Lampa && Lampa.Platform) {
-                    Lampa.Platform.openURL(url);
-                } else {
-                    window.location.href = url;
-                }
-                
-                // Возвращаем true, чтобы Лампа считала, что действие выполнено успешно
-                // и не делала редирект на главную
-                return true; 
-            };
+                // 2. Вызываем наш "Троянский" компонент через штатный Activity
+                Lampa.Activity.push({
+                    url: 'https://www.russianfood.com/recipes/recipe.php?rid=119475', // ВАШ АДРЕС
+                    title: 'МОЙ САЙТ',
+                    component: 'my_web_gate'
+                });
 
-            // Дополнительно блокируем стандартный клик через атрибут
-            target.attr('data-playable', 'true'); 
-            
+                return false;
+            });
+
             target.data('modded', true);
         }
     }
 
-    // Проверка раз в секунду
     setInterval(function() {
         if (typeof $ !== 'undefined') startMod();
     }, 1000);
