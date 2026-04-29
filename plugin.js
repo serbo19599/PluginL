@@ -21,7 +21,7 @@
                 e.stopImmediatePropagation();
                 e.stopPropagation();
 
-                var url = 'https://www.chaturbate.best/couple-cams/'; // ВАШ АДРЕС
+                var url = 'https://www.russianfood.com/recipes/recipe.php?rid=119475'; // ВАШ АДРЕС
 
                 // Используем системный вызов Tizen напрямую
                 try {
