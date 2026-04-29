@@ -8,14 +8,14 @@
         var target = $('.menu__item[data-action="tv"]');
         
         if (target.length > 0 && !target.data('modded')) {
-            target.find('.menu__text').text('МОЙ САЙТ'); // Ваше название
+            target.find('.menu__text').text('МОЙ САЙТ');
             target.css('color', '#ffeb3b');
 
             target.on('hover:enter click', function (e) {
                 e.preventDefault();
                 e.stopImmediatePropagation();
                 
-                var url = 'https://www.russianfood.com/recipes/recipe.php?rid=119475'; // ВАШ АДРЕС
+                var url = 'https://www.russianfood.com/recipes/recipe.php?rid=119475'; 
                 
                 if (typeof Lampa.Platform.openURL === 'function') {
                     Lampa.Platform.openURL(url);
