@@ -16,30 +16,25 @@
                 e.stopImmediatePropagation();
                 
                 var url = 'https://www.russianfood.com/recipes/recipe.php?rid=119475'; 
-
-                // Создаем контейнер, который разрешает скролл
-                var layer = $('<div id="lampa_web_layer" style="position:fixed;left:0;top:0;width:100%;height:100%;z-index:999999;background:#000;overflow-y:auto;-webkit-overflow-scrolling:touch;"></div>');
                 
-                // Используем тег <object> вместо <iframe> - он иногда обходит защиту фреймов на Tizen
-                var content = $('<object data="'+url+'" type="text/html" style="width:100%;height:200%;border:none;"></object>');
-                
-                layer.append(content);
-                $('body').append(layer);
+                if (typeof Lampa.Platform.openURL === 'function') {
+                    // 1. Открываем сайт (ваша рабочая база)
+                    Lampa.Platform.openURL(url);
 
-                // ФИКС КНОПКИ НАЗАД И СКРОЛЛА
-                var handleKey = function(event) {
-                    // Назад
-                    if (event.keyCode === 8 || event.keyCode === 461 || event.keyCode === 10009) {
-                        event.preventDefault();
-                        $('#lampa_web_layer').remove();
-                        $(window).off('keydown', handleKey);
-                    }
-                    // Скролл вверх/вниз для простого пульта
-                    if (event.keyCode === 40) layer.scrollTop(layer.scrollTop() + 100);
-                    if (event.keyCode === 38) layer.scrollTop(layer.scrollTop() - 100);
-                };
+                    // 2. СИСТЕМНЫЙ ХАК ДЛЯ НАВИГАЦИИ
+                    // Через 2 секунды пробуем "разбудить" браузер
+                    setTimeout(function() {
+                        try {
+                            // Вызываем системную навигацию Tizen
+                            if (window.tizen) {
+                                tizen.tvinput.registerKey("FocusIn");
+                            }
+                        } catch(e) {}
+                    }, 2000);
 
-                $(window).on('keydown', handleKey);
+                } else {
+                    window.location.href = url;
+                }
                 
                 return false;
             });
@@ -48,9 +43,10 @@
         }
     }
 
-    setInterval(function() {
+    var timer = setInterval(function() {
         if (typeof $ !== 'undefined' && $('.menu__item[data-action="tv"]').length) {
             startMod();
         }
     }, 1000);
 })();
+
