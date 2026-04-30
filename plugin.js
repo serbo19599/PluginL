@@ -1,46 +1,26 @@
 (function () {
     'use strict';
 
-    if (window.my_mod_active) return;
-    window.my_mod_active = true;
+    Lampa.Listener.follow('app', function (e) {
+        if (e.type === 'ready') {
+            // Создаем кнопку с названием "Мой сайт"
+            var item = $('<div class="menu__item selector focus">\n' +
+                '<div class="menu__ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" fill="white"/></svg></div>\n' +
+                '<div class="menu__text">Мой сайт</div>\n' +
+                '</div>');
 
-    function startMod() {
-        var target = $('.menu__item[data-action="tv"]');
-        
-        if (target.length > 0 && !target.data('modded')) {
-            target.find('.menu__text').text('МОЙ САЙТ');
-            target.css('color', '#ffeb3b');
-
-            target.on('hover:enter click', function (e) {
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                
-                var url = 'https://www.russianfood.com/recipes/recipe.php?rid=119475'; 
-
-                // ПРОВЕРКА MSX API
-                if (typeof TVX === 'undefined') {
-                    // Если MSX API не загружен, пробуем открыть через стандарт
-                    Lampa.Platform.openURL(url);
-                } else {
-                    // КОМАНДА ДЛЯ MSX: Открыть как контент
-                    // Это заставляет MSX держать пульт под контролем
-                    TVX.Navigation.navigateTo(url, {
-                        type: 'html',
-                        title: 'Рецепты'
-                    });
-                }
-                
-                return false;
+            // При нажатии открывается именно ваша ссылка на russianfood
+            item.on('hover:enter', function () {
+                Lampa.Activity.push({
+                    url: 'https://www.russianfood.com/recipes/recipe.php?rid=119475',
+                    title: 'Мой сайт',
+                    component: 'web_view',
+                    page: 1
+                });
             });
 
-            target.data('modded', true);
+            // Добавляем в боковое меню
+            $('.menu .menu__list').append(item);
         }
-    }
-
-    // В MSX иногда нужно подождать загрузки библиотеки TVX
-    var timer = setInterval(function() {
-        if (typeof $ !== 'undefined' && $('.menu__item[data-action="tv"]').length) {
-            startMod();
-        }
-    }, 1000);
+    });
 })();
