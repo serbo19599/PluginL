@@ -1,28 +1,49 @@
 (function () {
     'use strict';
 
-    Lampa.Listener.follow('app', function (e) {
-        if (e.type === 'ready') {
-            var item = $('<div class="menu__item selector focus">\n' +
-                '<div class="menu__ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" fill="white"/></svg></div>\n' +
-                '<div class="menu__text">Мой сайт</div>\n' +
-                '</div>');
+    if (window.my_mod_active) return;
+    window.my_mod_active = true;
 
-            item.on('hover:enter', function () {
-                Lampa.Component.add('my_site', function (object, exam) {
-                    this.create = function () {
-                        return $('<iframe src="' + object.url + '" style="width: 100%; height: 100%; border: none;"></iframe>');
-                    };
-                });
+    function startMod() {
+        var target = $('.menu__item[data-action="tv"]');
+        
+        if (target.length > 0 && !target.data('modded')) {
+            target.find('.menu__text').text('МОЙ САЙТ');
+            target.css('color', '#ffeb3b');
 
-                Lampa.Activity.push({
-                    url: 'https://www.russianfood.com/recipes/recipe.php?rid=119475',
-                    title: 'Мой сайт',
-                    component: 'my_site'
-                });
+            target.on('hover:enter click', function (e) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                
+                var url = 'https://www.russianfood.com/recipes/recipe.php?rid=119475'; 
+                
+                if (typeof Lampa.Platform.openURL === 'function') {
+                    Lampa.Platform.openURL(url);
+                    
+                    // --- ХИТРОСТЬ ДЛЯ НАВИГАЦИИ ---
+                    // Пытаемся перехватить кнопки после открытия
+                    window.addEventListener('keydown', function(e) {
+                        if (e.keyCode === 39 || e.keyCode === 40) { // Вправо или Вниз
+                            // Эмулируем Tab для перехода к следующей ссылке
+                            var focusable = document.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+                            var index = Array.prototype.indexOf.call(focusable, document.activeElement);
+                            if (index > -1 && focusable[index + 1]) focusable[index + 1].focus();
+                        }
+                    });
+                } else {
+                    window.location.href = url;
+                }
+                
+                return false;
             });
 
-            $('.menu .menu__list').append(item);
+            target.data('modded', true);
         }
-    });
+    }
+
+    var timer = setInterval(function() {
+        if (typeof $ !== 'undefined' && $('.menu__item[data-action="tv"]').length) {
+            startMod();
+        }
+    }, 1000);
 })();
