@@ -9,7 +9,17 @@
                 '</div>');
 
             item.on('hover:enter', function () {
-                Lampa.Platform.openURL('https://www.russianfood.com/recipes/recipe.php?rid=119475');
+                Lampa.Component.add('my_site', function (object, exam) {
+                    this.create = function () {
+                        return $('<iframe src="' + object.url + '" style="width: 100%; height: 100%; border: none;"></iframe>');
+                    };
+                });
+
+                Lampa.Activity.push({
+                    url: 'https://www.russianfood.com/recipes/recipe.php?rid=119475',
+                    title: 'Мой сайт',
+                    component: 'my_site'
+                });
             });
 
             $('.menu .menu__list').append(item);
