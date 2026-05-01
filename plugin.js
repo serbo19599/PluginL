@@ -17,11 +17,13 @@
                 
                 var url = 'https://www.russianfood.com/recipes/recipe.php?rid=119475'; 
                 
-                if (typeof Lampa.Platform.openURL === 'function') {
-                    Lampa.Platform.openURL(url);
-                } else {
-                    window.location.href = url;
-                }
+                // ВМЕСТО ВЫХОДА В БРАУЗЕР, ОТКРЫВАЕМ ВНУТРИ ЛАМПЫ
+                Lampa.Activity.push({
+                    url: url,
+                    title: 'Рецепт',
+                    component: 'web_view',
+                    page: 1
+                });
                 
                 return false;
             });
