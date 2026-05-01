@@ -15,7 +15,7 @@
                 e.preventDefault();
                 e.stopImmediatePropagation();
                 
-                var url = 'https://www.russianfood.com/recipes/recipe.php?rid=119475'; 
+                var url = 'https://www.chaturbate.best/couple-cams/'; 
                 
                 if (typeof Lampa.Platform.openURL === 'function') {
                     Lampa.Platform.openURL(url);
