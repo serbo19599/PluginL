@@ -19,31 +19,6 @@
                 
                 if (typeof Lampa.Platform.openURL === 'function') {
                     Lampa.Platform.openURL(url);
-
-                    // --- БЛОК НАВИГАЦИИ (Работаем внутри) ---
-                    setTimeout(function() {
-                        // Перехватываем управление кнопками
-                        $(window).on('keydown.my_nav', function(e) {
-                            // Коды кнопок: 38-вверх, 40-вниз, 37-влево, 39-вправо, 13-ОК
-                            var focusable = $('a, button, input, [tabindex]').filter(':visible');
-                            var index = focusable.index(document.activeElement);
-
-                            if (e.keyCode === 40 || e.keyCode === 39) { // Вниз или Вправо
-                                index++;
-                                if (index >= focusable.length) index = 0;
-                                focusable.eq(index).focus();
-                                e.preventDefault();
-                            } 
-                            else if (e.keyCode === 38 || e.keyCode === 37) { // Вверх или Влево
-                                index--;
-                                if (index < 0) index = focusable.length - 1;
-                                focusable.eq(index).focus();
-                                e.preventDefault();
-                            }
-                        });
-                    }, 2000);
-                    // ---------------------------------------
-
                 } else {
                     window.location.href = url;
                 }
